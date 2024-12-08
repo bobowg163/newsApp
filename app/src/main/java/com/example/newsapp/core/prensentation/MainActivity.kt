@@ -11,7 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.example.newsapp.core.prensentation.ui.theme.NewsAppTheme
+import com.example.newsapp.news.prensentation.NewsScreenCore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,29 +24,24 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NewsAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                Navigation()
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NewsAppTheme {
-        Greeting("Android")
+    @Composable
+    fun Navigation(modifier: Modifier = Modifier) {
+        val navController = rememberNavController()
+        NavHost(navController = navController, startDestination = Screen.News) {
+            composable<Screen.News> {
+                NewsScreenCore {
+                    navController.navigate(Screen.Article(it))
+                }
+            }
+            composable<Screen.Article> { backStackEntry ->
+                val article:Screen.Article = backStackEntry.toRoute()
+                article.articleId
+            }
+        }
     }
 }
