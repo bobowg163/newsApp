@@ -26,7 +26,7 @@ class NewsRepositoryImpl(
 ) : NewsRepository {
 
     private val tag = "NewsRepository: "
-    private val baseUrl = "https://newsdata.io/api/latest"
+    private val baseUrl = "https://newsdata.io/api/1/latest"
     private val apiKey = "pub_616841443b05c36ef31ffd5aaf3dde5640763"
     private suspend fun getLocalNews(nextPage: String?): NewsList {
         val localNews = articlesDao.getArticleList()

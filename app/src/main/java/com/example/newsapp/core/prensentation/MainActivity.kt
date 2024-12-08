@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             composable<Screen.Article> { backStackEntry ->
-                val article:Screen.Article = backStackEntry.toRoute()
+                val article: Screen.Article = backStackEntry.toRoute()
                 article.articleId
             }
         }

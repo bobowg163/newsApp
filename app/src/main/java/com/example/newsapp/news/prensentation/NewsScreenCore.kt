@@ -230,6 +230,15 @@ private fun NewsScreenCorePreview() {
                         "2024-11-10",
                         "9",
                         "https://a57.foxnews.com/cf-images.us-east-1.prod.boltdns.net/v1/static/694940094001/37423c3e-0749-4e3d-a691-0022c348d419/df608964-c315-4fd1-8569-7ac16a7ff579/1280x720/match/896/500/image.jpg?ve=1&tl=1",
+                    ),
+                    Article(
+                        "adea",
+                        "adfesa",
+                        "fsaepaeakfealfe",
+                        "aepdafekjluiofekljoalkjfekjklj",
+                        "2024-11-10",
+                        "9",
+                        "https://a57.foxnews.com/cf-images.us-east-1.prod.boltdns.net/v1/static/694940094001/37423c3e-0749-4e3d-a691-0022c348d419/df608964-c315-4fd1-8569-7ac16a7ff579/1280x720/match/896/500/image.jpg?ve=1&tl=1",
                     )
                 )
             ),

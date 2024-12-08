@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 class NewsViewModel(
     private val newsRepository: NewsRepository
 ) : ViewModel() {
+
     var state by mutableStateOf(NewsState())
         private set
 
@@ -35,7 +36,10 @@ class NewsViewModel(
 
     private fun loadNews() {
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            state = state.copy(
+                isLoading = true
+            )
+
             newsRepository.getNews().collect { newResult ->
                 state = when (newResult) {
                     is NewsResult.Error -> {
@@ -51,13 +55,19 @@ class NewsViewModel(
                     }
                 }
             }
-            state = state.copy(isLoading = false)
+
+            state = state.copy(
+                isLoading = false
+            )
         }
     }
 
     private fun paginate() {
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            state = state.copy(
+                isLoading = true
+            )
+
             newsRepository.paginate(state.nextPage).collect { newResult ->
                 state = when (newResult) {
                     is NewsResult.Error -> {
@@ -74,7 +84,10 @@ class NewsViewModel(
                     }
                 }
             }
-            state = state.copy(isLoading = false)
+
+            state = state.copy(
+                isLoading = false
+            )
         }
     }
 
