@@ -11,6 +11,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 /**
  * @项目 NewsApp
@@ -50,11 +51,51 @@ class NewsRepositoryImpl(
     }
 
     override suspend fun getNews(): Flow<NewsResult<NewsList>> {
-        TODO("Not yet implemented")
+        return flow{
+            val remoteNewsList = try {
+                getRemoteNews(null)
+            }catch (e:Exception){
+                e.printStackTrace()
+                println(tag + "getNews remote exception:" + e.message)
+                null
+            }
+
+            remoteNewsList?.let {
+                articlesDao.clearDatabase()
+                articlesDao.upsertArticleList(remoteNewsList.articles.map { it.toArticleEntity() })
+                emit(NewsResult.Success(getLocalNews(remoteNewsList.nextPage)))
+                return@flow
+            }
+
+            val localNewsList = getLocalNews(null)
+            if (localNewsList.articles.isNotEmpty()){
+                emit(NewsResult.Success(localNewsList))
+                return@flow
+            }
+
+            emit(NewsResult.Error("没有数据！"))
+        }
     }
 
     override suspend fun paginate(nextPage: String): Flow<NewsResult<NewsList>> {
-        TODO("Not yet implemented")
+        return flow{
+            val remoteNewsList = try {
+                getRemoteNews(nextPage)
+            }catch (e:Exception){
+                e.printStackTrace()
+                println(tag + "paginate remote exception:" + e.message)
+                null
+            }
+
+            remoteNewsList?.let {
+                articlesDao.upsertArticleList(remoteNewsList.articles.map { it.toArticleEntity() })
+                // 不会像 getNews() 那样从数据库获取它们
+                // 因为我们还会获取分页前已经拥有的旧项目
+                emit(NewsResult.Success(remoteNewsList))
+                return@flow
+            }
+
+        }
     }
 
     override suspend fun getArticle(articleId: String): Flow<NewsResult<Article>> {
