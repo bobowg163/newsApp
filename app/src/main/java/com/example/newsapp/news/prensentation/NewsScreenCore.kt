@@ -1,24 +1,48 @@
 package com.example.newsapp.news.prensentation
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.newsapp.R
+import com.example.newsapp.core.domain.Article
 import com.example.newsapp.core.prensentation.ui.theme.NewsAppTheme
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import org.koin.androidx.compose.koinViewModel
 
 /**
@@ -68,8 +92,125 @@ private fun NewsScreen(
             )
         }
     ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(innerPadding)
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            if (state.isLoading && state.articleList.isEmpty()) {
+                CircularProgressIndicator()
+            }
 
+            if (state.isError && state.articleList.isEmpty()) {
+                Text(
+                    text = stringResource(R.string.notloadnews),
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            if (state.articleList.isNotEmpty()) {
+                val listSate = rememberLazyListState()
+                val shouldPaginate = remember {
+                    derivedStateOf {
+                        val totalItems = listSate.layoutInfo.totalItemsCount
+                        val lastVisibleIndex =
+                            listSate.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0
+                        lastVisibleIndex == totalItems - 1 && !state.isLoading
+                    }
+                }
+
+                LaunchedEffect(key1 = listSate) {
+                    snapshotFlow { shouldPaginate.value }.distinctUntilChanged().filter { it }
+                        .collect { onAction(NewsAction.Paginate) }
+                }
+
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(bottom = 8.dp),
+                    state = listSate
+                ) {
+                    itemsIndexed(
+                        items = state.articleList,
+                        key = { _, article -> article.articleId }
+                    ) { index, article ->
+                        AritcleItem(article = article, onArticleClick = onArticleClick)
+                    }
+                }
+
+            }
+        }
     }
+}
+
+@Composable
+fun AritcleItem(article: Article, onArticleClick: (String) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onArticleClick(article.articleId) }
+            .padding(vertical = 16.dp)
+    ) {
+        Text(
+            text = article.sourceName,
+            fontSize = 22.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = article.title,
+            fontSize = 18.sp,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        AsyncImage(
+            model = article.imageUrl,
+            contentDescription = article.title,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp)
+                .background(MaterialTheme.colorScheme.primary.copy(0.3f))
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = article.description,
+            fontSize = 17.sp,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = article.pubDate,
+            fontSize = 15.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(20.dp)
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(0.7f))
+    )
 }
 
 @Preview
@@ -77,7 +218,21 @@ private fun NewsScreen(
 private fun NewsScreenCorePreview() {
     NewsAppTheme {
         NewsScreen(
-            state = NewsState(),
+            state = NewsState(
+                isError = false,
+                isLoading = true,
+                articleList = listOf(
+                    Article(
+                        "adea",
+                        "adfesa",
+                        "fsaepaeakfealfe",
+                        "aepdafekjluiofekljoalkjfekjklj",
+                        "2024-11-10",
+                        "9",
+                        "https://a57.foxnews.com/cf-images.us-east-1.prod.boltdns.net/v1/static/694940094001/37423c3e-0749-4e3d-a691-0022c348d419/df608964-c315-4fd1-8569-7ac16a7ff579/1280x720/match/896/500/image.jpg?ve=1&tl=1",
+                    )
+                )
+            ),
             onAction = {},
             onArticleClick = {}
         )
