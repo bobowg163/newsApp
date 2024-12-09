@@ -38,13 +38,13 @@ class NewsRepositoryImpl(
         )
         return newsList
     }
+
     private suspend fun getRemoteNews(nextPage: String?): NewsList {
-        val newsListDto:NewsListDto = httpClient.get(baseUrl){
-            parameter("apiKey",apiKey)
-            parameter("q","中文")
-            parameter("country","cn")
-            parameter("language","zh")
-            if (nextPage!= null) parameter("page",nextPage)
+        val newsListDto: NewsListDto = httpClient.get(baseUrl) {
+            parameter("apiKey", apiKey)
+            parameter("country", "cn")
+            parameter("language", "zh")
+            if (nextPage != null) parameter("page", nextPage)
         }.body()
         println(tag + "getRemoteNews " + newsListDto.results?.size + " nextPage:" + nextPage)
 
@@ -52,10 +52,10 @@ class NewsRepositoryImpl(
     }
 
     override suspend fun getNews(): Flow<NewsResult<NewsList>> {
-        return flow{
+        return flow {
             val remoteNewsList = try {
                 getRemoteNews(null)
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
                 if (e is CancellationException) throw e
                 println(tag + "getNews remote exception:" + e.message)
@@ -70,7 +70,7 @@ class NewsRepositoryImpl(
             }
 
             val localNewsList = getLocalNews(null)
-            if (localNewsList.articles.isNotEmpty()){
+            if (localNewsList.articles.isNotEmpty()) {
                 emit(NewsResult.Success(localNewsList))
                 return@flow
             }
@@ -81,10 +81,10 @@ class NewsRepositoryImpl(
 
 
     override suspend fun paginate(nextPage: String?): Flow<NewsResult<NewsList>> {
-        return flow{
+        return flow {
             val remoteNewsList = try {
                 getRemoteNews(nextPage)
-            }catch (e:Exception){
+            } catch (e: Exception) {
                 e.printStackTrace()
                 if (e is CancellationException) throw e
                 println(tag + "paginate remote exception:" + e.message)
@@ -103,6 +103,35 @@ class NewsRepositoryImpl(
     }
 
     override suspend fun getArticle(articleId: String): Flow<NewsResult<Article>> {
-        TODO("Not yet implemented")
+        return flow {
+            articlesDao.getArticle(articleId)?.let { article ->
+                println(tag + "get local article" + article.articleId)
+                emit(NewsResult.Success(article.toArticle()))
+                return@flow
+            }
+
+            try {
+                val remoteArticle: NewsListDto = httpClient.get(baseUrl) {
+                    parameter("apiKey", apiKey)
+                    parameter("id", articleId)
+                    parameter("country", "cn")
+                    parameter("language", "zh")
+                }.body()
+
+                println(tag + " get article remote " + remoteArticle.results?.size)
+
+                if (remoteArticle.results?.isNotEmpty() == true) {
+                    emit(NewsResult.Success(remoteArticle.results[0].toArticle()))
+                } else {
+                    emit(NewsResult.Error("不能加载数据"))
+                }
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                if (e is CancellationException) throw e
+                println(tag + "get article remote exception: " + e.message)
+                emit(NewsResult.Error("不能加载数据"))
+            }
+        }
     }
 }
