@@ -1,6 +1,7 @@
 package com.example.newsapp
 
 import android.app.Application
+import com.example.newsapp.article.di.articleModule
 import com.example.newsapp.core.di.coreModule
 import com.example.newsapp.news.di.newsModule
 import org.koin.android.ext.koin.androidContext
@@ -20,7 +21,8 @@ class App:Application() {
             androidContext(this@App)
             modules(
                 coreModule,
-                newsModule
+                newsModule,
+                articleModule
             )
         }
     }

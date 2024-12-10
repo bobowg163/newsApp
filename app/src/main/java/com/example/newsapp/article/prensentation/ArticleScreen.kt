@@ -20,14 +20,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.example.newsapp.R
 import com.example.newsapp.core.domain.Article
 import com.example.newsapp.core.prensentation.ui.theme.NewsAppTheme
 import org.koin.androidx.compose.koinViewModel
@@ -48,20 +47,6 @@ fun ArticleScreenCore(
         viewModel.onAction(ArticleAction.LoadArticle(articleId))
     }
 
-    ArticleScreen(
-        state = viewModel.state,
-        onAction = viewModel::onAction
-    )
-
-}
-
-@Composable
-fun ArticleScreen(
-    modifier: Modifier = Modifier,
-    state: ArticleState,
-    onAction: (ArticleAction) -> Unit
-) {
-
     Scaffold { paddingValues ->
         Box(
             modifier = Modifier
@@ -70,95 +55,140 @@ fun ArticleScreen(
                 .background(MaterialTheme.colorScheme.background),
             contentAlignment = Alignment.Center
         ) {
-            if (state.isLong && state.article == null) {
+            if (viewModel.state.isLong && viewModel.state.article == null) {
                 CircularProgressIndicator()
             }
 
-            if (state.isError && state.article == null) {
+            if (viewModel.state.isError && viewModel.state.article == null) {
                 Text(
-                    text = stringResource(R.string.notloadnews),
+                    text = "Couldn't Load Article",
                     fontSize = 20.sp,
+                    fontFamily = FontFamily.Serif,
                     color = MaterialTheme.colorScheme.error
                 )
             }
-            state.article?.let { article ->
-                ArticleDetails(article = article)
-            }
+        }
+
+        viewModel.state.article?.let { article ->
+            ArticleScreen(
+                modifier = Modifier.padding(paddingValues),
+                article = article
+            )
         }
     }
+
 
 }
 
 @Composable
-fun ArticleDetails(
+fun ArticleScreen(
     modifier: Modifier = Modifier,
     article: Article
 ) {
+
     Column(
         modifier = modifier
-            .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(
-                rememberScrollState()
-            )
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(vertical = 16.dp)
+            .padding(top = 8.dp),
     ) {
+
 
         Text(
             text = article.sourceName,
-            fontSize = 24.sp,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            fontFamily = FontFamily.Serif,
+            fontSize = 22.sp,
+            maxLines = 3,
             fontWeight = FontWeight.SemiBold,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
         Spacer(modifier = Modifier.height(4.dp))
+
         Text(
             text = article.pubDate,
-            fontSize = 14.sp,
-            maxLines = 1,
+            fontFamily = FontFamily.Serif,
+            fontSize = 13.sp,
+            maxLines = 3,
             overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = article.title,
-            fontSize = 20.sp,
+            fontFamily = FontFamily.Serif,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
         Spacer(modifier = Modifier.height(16.dp))
+
         AsyncImage(
             model = article.imageUrl,
             contentDescription = article.title,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary.copy(0.4f)).height(250.dp)
-        )
-        Text(
-            text = article.description,
-            fontSize = 16.sp,
-            modifier = Modifier.padding(horizontal = 16.dp)
+                .background(MaterialTheme.colorScheme.primary.copy(0.3f))
+                .height(250.dp),
         )
 
         Spacer(modifier = Modifier.height(16.dp))
-        HorizontalDivider()
-        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
-            text = article.content,
+            text = article.description,
+            fontFamily = FontFamily.Serif,
             fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HorizontalDivider()
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = article.content,
+            fontFamily = FontFamily.Serif,
+            fontSize = 16.sp,
+            overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+
     }
+
 }
+
 
 @Preview
 @Composable
 private fun ArticleScreenPrview() {
     NewsAppTheme {
         ArticleScreen(
-            state = ArticleState(),
-            onAction = {}
+            article = Article(
+                articleId = "1",
+                title = "News Title",
+                description = "Description Description Description Descrion Dtion Descron Desc and ription.",
+                content = "Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content Content ",
+                pubDate = "PubDate",
+                sourceName = "SourceName",
+                imageUrl = ""
+            )
         )
     }
 }
