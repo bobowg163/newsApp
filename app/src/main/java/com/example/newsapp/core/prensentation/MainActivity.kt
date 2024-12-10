@@ -5,11 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.example.newsapp.article.prensentation.ArticleScreenCore
 import com.example.newsapp.core.prensentation.ui.theme.NewsAppTheme
 import com.example.newsapp.news.prensentation.NewsScreenCore
 
@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun Navigation(modifier: Modifier = Modifier) {
+    fun Navigation() {
         val navController = rememberNavController()
         NavHost(navController = navController, startDestination = Screen.News) {
             composable<Screen.News> {
@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
             }
             composable<Screen.Article> { backStackEntry ->
                 val article: Screen.Article = backStackEntry.toRoute()
-                article.articleId
+                ArticleScreenCore(articleId = article.articleId)
             }
         }
     }
