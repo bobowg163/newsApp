@@ -1,5 +1,6 @@
 package com.example.newsapp.core.data
 
+import com.example.newsapp.BuildConfig
 import com.example.newsapp.core.data.local.ArticlesDao
 import com.example.newsapp.core.data.remote.NewsListDto
 import com.example.newsapp.core.domain.Article
@@ -24,10 +25,9 @@ class NewsRepositoryImpl(
     private val httpClient: HttpClient,
     private val articlesDao: ArticlesDao
 ) : NewsRepository {
-
     private val tag = "NewsRepository: "
     private val baseUrl = "https://newsdata.io/api/1/latest"
-    private val apiKey = "pub_616841443b05c36ef31ffd5aaf3dde5640763"
+    private val apiKey = BuildConfig.apiKey
     private suspend fun getLocalNews(nextPage: String?): NewsList {
         val localNews = articlesDao.getArticleList()
         println(tag + "getLocalNews " + localNews.size + " nextPage:" + nextPage)
@@ -40,6 +40,7 @@ class NewsRepositoryImpl(
     }
 
     private suspend fun getRemoteNews(nextPage: String?): NewsList {
+
         val newsListDto: NewsListDto = httpClient.get(baseUrl) {
             parameter("apiKey", apiKey)
             parameter("country", "cn")
